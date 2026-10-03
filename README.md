@@ -1,3 +1,6 @@
+> **mdaops experimental fork:** this branch adds an opt-in WASI P3 runtime for PostgreSQL.
+> See [WASI_P3.md](WASI_P3.md) for usage, live tests and limitations. This is not upstream-supported WASI functionality.
+
 <h1 align="center">SQLx</h1>
 <div align="center">
  <strong>

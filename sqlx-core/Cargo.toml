@@ -26,6 +26,8 @@ _rt-async-std = ["async-std", "_rt-async-io"]
 _rt-async-task = ["async-task"]
 _rt-smol = ["smol", "_rt-async-io", "_rt-async-task"]
 _rt-tokio = ["tokio", "tokio-stream"]
+# Experimental component-model runtime; enable only for WASI guests.
+_rt-wasi-p3 = ["dep:wasip3", "dep:wit-bindgen", "dep:futures-channel"]
 
 _tls-native-tls = ["native-tls"]
 _tls-rustls-aws-lc-rs = ["_tls-rustls", "rustls/aws-lc-rs", "webpki-roots"]
@@ -82,6 +84,7 @@ crc = { version = "3", optional = true }
 crossbeam-queue = "0.3.2"
 either = "1.6.1"
 futures-core = { version = "0.3.32", default-features = false }
+futures-channel = { version = "0.3", optional = true }
 futures-io = "0.3.32"
 futures-intrusive = "0.5.0"
 futures-util = { version = "0.3.32", default-features = false, features = ["alloc", "sink", "io"] }
@@ -117,3 +120,7 @@ features = ["postgres", "sqlite", "mysql", "migrate", "macros", "time", "uuid"]
 
 [lints]
 workspace = true
+
+[target.'cfg(target_os = "wasi")'.dependencies]
+wasip3 = { version = "=0.9.0", optional = true }
+wit-bindgen = { version = "=0.62.0", features = ["async-spawn", "inter-task-wakeup"], optional = true }
