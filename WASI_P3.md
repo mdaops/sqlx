@@ -1,6 +1,6 @@
 # Experimental WASI Preview 3 runtime
 
-This Oxlev fork adds an **opt-in PostgreSQL/WASI P3 runtime backend to sqlx-core**.
+This mdaops fork adds an **opt-in PostgreSQL/WASI P3 runtime backend to sqlx-core**.
 It is not an upstream-supported SQLx feature or a wasmCloud host plugin.
 
 Base: SQLx 0.9.0 published source revision
@@ -23,7 +23,7 @@ sqlx = { version = "=0.9.0", default-features = false, features = [
 sqlx-core = { version = "=0.9.0", features = ["_rt-wasi-p3"] }
 
 [patch.crates-io]
-sqlx-core = { git = "https://github.com/oxlev/sqlx", rev = "<tested-commit>" }
+sqlx-core = { git = "https://github.com/mdaops/sqlx", rev = "<tested-commit>" }
 ```
 
 Replace the placeholder with the full commit you have tested and commit Cargo.lock.
