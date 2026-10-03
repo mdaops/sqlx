@@ -194,7 +194,9 @@ pub async fn connect_tcp<Ws: WithSocket>(
     }
 
     cfg_if! {
-        if #[cfg(feature = "_rt-async-io")] {
+        if #[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))] {
+            Ok(with_socket.with_socket(crate::rt::rt_wasi_p3::P3Socket::connect(host, port).await?).await)
+        } else if #[cfg(feature = "_rt-async-io")] {
             Ok(with_socket.with_socket(connect_tcp_async_io(host, port).await?).await)
         } else {
             crate::rt::missing_rt((host, port, with_socket))

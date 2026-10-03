@@ -1,0 +1,8 @@
+# Independent consumer workspace: all packages except sqlx-core come from crates.io.
+[workspace]
+members = ["rust/sqlx-probe", "rust/seaorm-probe", "rust/p3-probe"]
+default-members = ["rust/sqlx-probe", "rust/seaorm-probe"]
+resolver = "2"
+
+[patch.crates-io]
+sqlx-core = { path = "../../sqlx-core" }

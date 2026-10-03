@@ -35,7 +35,16 @@ impl<S: Socket> RustlsSocket<S> {
                 Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
                     ready!(self.inner.poll_ready(cx))?;
                 }
-                ready => return Poll::Ready(ready.map(|_| ())),
+                result => {
+                    #[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))]
+                    {
+                        // P3 writes can be buffered until the async stream is polled.
+                        result?;
+                        return self.inner.socket.poll_flush(cx);
+                    }
+                    #[cfg(not(all(feature = "_rt-wasi-p3", target_os = "wasi")))]
+                    return Poll::Ready(result.map(|_| ()));
+                }
             }
         }
     }

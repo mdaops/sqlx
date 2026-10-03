@@ -77,6 +77,10 @@ pub mod sql_str;
 pub mod raw_sql;
 pub mod row;
 pub mod rt;
+#[cfg_attr(
+    all(feature = "_rt-wasi-p3", target_os = "wasi"),
+    path = "sync_wasi_p3.rs"
+)]
 pub mod sync;
 pub mod type_checking;
 pub mod type_info;

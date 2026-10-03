@@ -6,6 +6,9 @@ use std::time::Duration;
 
 use cfg_if::cfg_if;
 
+#[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))]
+pub mod rt_wasi_p3;
+
 #[cfg(feature = "_rt-async-io")]
 pub mod rt_async_io;
 
@@ -17,6 +20,8 @@ pub mod rt_tokio;
 pub struct TimeoutError;
 
 pub enum JoinHandle<T> {
+    #[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))]
+    WasiP3(futures_channel::oneshot::Receiver<T>),
     #[cfg(feature = "_rt-async-std")]
     AsyncStd(async_std::task::JoinHandle<T>),
 
@@ -43,7 +48,9 @@ pub async fn timeout<F: Future>(duration: Duration, f: F) -> Result<F::Output, T
     }
 
     cfg_if! {
-        if #[cfg(feature = "_rt-async-io")] {
+        if #[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))] {
+            rt_wasi_p3::timeout(duration, f).await
+        } else if #[cfg(feature = "_rt-async-io")] {
             rt_async_io::timeout(duration, f).await
         } else {
             missing_rt((duration, f))
@@ -58,7 +65,9 @@ pub async fn sleep(duration: Duration) {
     }
 
     cfg_if! {
-        if #[cfg(feature = "_rt-async-io")] {
+        if #[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))] {
+            rt_wasi_p3::sleep(duration).await
+        } else if #[cfg(feature = "_rt-async-io")] {
             rt_async_io::sleep(duration).await
         } else {
             missing_rt(duration)
@@ -78,7 +87,9 @@ where
     }
 
     cfg_if! {
-        if #[cfg(feature = "_rt-async-global-executor")] {
+        if #[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))] {
+            rt_wasi_p3::spawn(fut)
+        } else if #[cfg(feature = "_rt-async-global-executor")] {
             JoinHandle::AsyncTask(Some(async_global_executor::spawn(fut)))
         } else if #[cfg(feature = "_rt-smol")] {
             JoinHandle::AsyncTask(Some(smol::spawn(fut)))
@@ -175,6 +186,10 @@ impl<T: Send + 'static> Future for JoinHandle<T> {
     #[track_caller]
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         match &mut *self {
+            #[cfg(all(feature = "_rt-wasi-p3", target_os = "wasi"))]
+            Self::WasiP3(handle) => Pin::new(handle)
+                .poll(cx)
+                .map(|r| r.expect("P3 task ended without a result")),
             #[cfg(feature = "_rt-async-std")]
             Self::AsyncStd(handle) => Pin::new(handle).poll(cx),
 
